@@ -1,0 +1,49 @@
+{
+    "select": {
+        "fields": [
+            {
+                "field": "event_id",
+                "table": "e"
+            },
+            {
+                "field": "event_type_id"
+            },
+            {
+                "field": "status_id"
+            },
+            {
+                "field": "event_start"
+            }
+        ]
+    },
+    "from": {
+        "table": "event",
+        "alias": "e"
+    },
+    "innerjoin": {
+        "table": "event_attribute",
+        "alias": "ea",
+        "on": {
+            "op": "and",
+            "ops": [
+                "e.event_id=ea.event_id",
+                "ea.attr_name<>'sequenceId'"
+            ]
+        }
+    },
+    "where": {
+        "op": "and",
+        "ops": [
+            "thru_date.isnull",
+            "status_id<>'CANCELLED'",
+            "event_type_id='INS_TASK'",
+            "e.event_id='10982'"
+        ]
+    },
+    "orderby": {
+        "field": "event_id",
+        "table": "e"
+    },
+    "limit": 1,
+    "input": "select \n-- *\ne.event_id, event_type_id, status_id, event_start\n-- seq.attr_value as sequence_id,\n-- ea.*\n\nfrom event as e\n-- inner join event_attribute as seq\n--     on e.event_id = seq.event_id and seq.attr_name = 'sequenceId'\ninner join event_attribute as ea\n    on e.event_id = ea.event_id and ea.attr_name <> 'sequenceId'\n\nwhere (thru_date isnull\nand status_id <> 'CANCELLED')\nand event_type_id = 'INS_TASK'\nand e.event_id = '10982'\norder by e.event_id\nlimit 1\n-- select * from order_visit"
+}
