@@ -23,6 +23,7 @@ app.post("/convert", (req, res) => {
     let parsed = parse(req.body.input);
     let tokens = tokenize(parsed);
     
+    fs.writeFile("out.json", JSON.stringify(tokens, null, 4))
     res.json({
         output: EntityQuery.build(tokens)
     })

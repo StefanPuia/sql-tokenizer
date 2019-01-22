@@ -44,6 +44,8 @@ function sanitize(sql) {
     }
     sql = uncommented.join(" ");
     sql = sql.replace(/\s+/g, " ");
+    sql = sql.replace(/ and /gi, " and ");
+    sql = sql.replace(/ or /gi, " or ");
 
     return sql;
 }
@@ -53,7 +55,25 @@ function parseCondition(conditions) {
     conditions = conditions.replace(/\((.*?)/g, "( $1");
     conditions = conditions.replace(/(.*?)\)/g, "$1 )");
 
-    return conditions.split(" ");
+    let values = []
+
+    let m;
+    while (m = conditions.match(/\'(.+?)\'/)) {
+        values.push(m[1])
+        conditions = conditions.substr(0, m.index) + ('$' + values.length) + conditions.substr(m.index + m[0].length)
+    }
+    let ops = conditions.split(" ");
+
+    let out = [];
+    for(let op of ops) {
+        let m = false;
+        while (m = op.match(/\$(\d+)/)) {
+            op = op.substr(0, m.index) + `'${values[m[1]]}'` + op.substr(m.index + m[0].length)
+        }
+        out.push(op);
+    }
+
+    return out
 }
 
 function compactize(sql) {
